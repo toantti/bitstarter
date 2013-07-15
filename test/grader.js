@@ -28,7 +28,6 @@ var util = require('util');
 var restler = require('restler');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
-var URLDEFAULT = "http://www.google.com";
 
 var assertFileExists = function(infile) {
     var instr = infile.toString();
@@ -70,19 +69,22 @@ if(require.main == module) {
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-u, --url <html_url>', 'URL to index.html') 
         .parse(process.argv);
-    console.log("URL: "+ program.url);
+
     var file = program.file;
     if (program.url != null) {
 	restler.get(program.url).on('complete', function(result) {
 	    
 	    fs.writeFileSync('index.html', result);
 	    file = 'index.html';
-	    console.log("out:" + file);
+	    var checkJson = checkHtmlFile(file, program.checks);
+	    var outJson = JSON.stringify(checkJson, null, 4);
+	    console.log(outJson);
 	});
+    } else {
+	var checkJson = checkHtmlFile(file, program.checks);
+	var outJson = JSON.stringify(checkJson, null, 4);
+	console.log(outJson);
     }
-    var checkJson = checkHtmlFile(file, program.checks);
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
